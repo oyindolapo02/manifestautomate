@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: volgaweb-config
+  namespace: dev
+
+data:
+  VOLGAINC-FRONTEND-URL: "http://volgafrontend-service:30000"
+  APP-NAME: "volgainc.com"
+
+

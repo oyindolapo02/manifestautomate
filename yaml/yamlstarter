@@ -1,0 +1,115 @@
+#!/usr/bin/env bash
+
+applyconfig(){
+    cd ..
+    # extention=.yaml
+    pwd
+
+    # for getnames in *.yaml;
+    # do
+    #     # echo $getnames
+    #     if [[ $getnames == *config* ]]; then
+    #         echo $getnames
+    #     fi
+    # done
+}
+
+getconfig(){
+    for configmap in *.yaml; 
+    do
+        if [[ $configmap = *config* ]]; then
+            echo $configmap
+            kubectl apply -n dev -f $configmap
+        fi
+
+    done
+}
+
+
+kubestarter(){
+    
+    yamlfile=("volgabackdeployment.yaml" "volgaincdeployment.yaml" "volgaincservice.yaml" volgafrontendservice.yaml "volgaconfig.yaml" "volgabackendconfig.yaml")
+    kubectl config get-contexts
+
+    echo "this are the available clusters"
+    kubectl config get-contexts
+
+    read -p "switch to the correct cluster for further proceeds...: " clust
+
+    get_All_Clust=$(kubectl config get-contexts | grep -o $clust)
+    echo $get_All_Clust
+
+    get_name_clust=$(kind get clusters)
+    echo "this are the available cluster names"
+    echo $get_name_clust
+
+    read -p "enter in your cluster name: " clusterName
+
+    getcluster=$(kind get clusters | grep -o $clusterName)
+    echo "$getcluster gotten the cluster"
+
+    if [[ "$getcluster" && "$get_All_Clust" ]];then
+
+        switchcluster=$(kubectl config use-context $clust)
+        echo "switched successful to $clust"
+
+        kubectl config get-contexts
+
+        echo $getcluster
+        if kubectl apply -f deploynamespace.yaml ;then
+            cd ..
+            pwd
+
+            getconfig
+
+            for deploymentndservice in *.yaml;
+            do
+                if [[ $deploymentndservice = *deploy* ]]; then
+                    echo "this are the deployments ==> $deploymentndservice"
+                    activatedeploy=$(kubectl apply -n dev -f $deploymentndservice)
+                    error=$(kubectl get pods -n dev | grep -oE "CrashLoopBackOff|ImagePullBackOff|CreateContainerConfigError")
+                    if [ -n "$error" ] ;then
+                        echo "this are the $error"
+                    else
+                        echo "all pod are healthy with no errors"
+                        kubectl rollout restart deployment $deploymentndservice -n dev
+                    fi
+                        
+                elif [[ $deploymentndservice = *service* ]]; then
+                    echo $deploymentndservice
+                    activatedeploy=$(kubectl apply -n dev -f $deploymentndservice)
+                    error=$(kubectl get pods -n dev | grep -oE "CrashLoopBackOff|ImagePullBackOff|CreateContainerConfigError")
+                    if [ -n "$error" ] ;then
+                        echo $error
+                    else
+                        echo "all service are healthy with no errors"
+                    fi
+                fi
+            done
+
+            # for deployments in "${yamlfile[@]}";
+            # do
+            #     kubectl apply -n dev -f $deployments
+            #     kubectl get pods -o wide -n dev
+            #     echo $get_all_pods
+            #     error=$(kubectl get pods -o wide -n dev | grep -oE "CrashLoopBackOff|ImagePullBackOff|CreateContainerConfigError")
+            #     if $error ; then
+            #         echo "there is an error"
+            #         echo $error
+            #     else
+            #         echo "no error found"
+            #     fi
+            # done
+        else
+            echo "error"
+        fi
+
+    else
+        echo "cluster does not exist or you have not switched to the right cluster. Make sure you check available cluster above or create one"
+    fi
+
+    
+}
+
+kubestarter
+

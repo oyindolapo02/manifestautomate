@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: volga-backend-deploy
+  namespace: dev
+
+spec:
+  replicas: 3
+  
+  selector:
+    matchLabels:
+      app: volgabackend-label
+      
+  template:
+    metadata:
+      labels:
+        app: volgabackend-label
+    spec:
+      containers:
+        - name: backend-volga-cont
+          image: oyindolapo02/volgabackend:v1.1
+          ports:
+          - containerPort: 5000
+
+          env:
+            - name: dataBase-URL
+              valueFrom:
+                configMapKeyRef:
+                  name: volgabackend-configmap
+                  key: dataBase-URL

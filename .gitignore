@@ -1,0 +1,10 @@
+*.pem
+*.key
+*.crt
+kubeconfig
+.env
+.env.*
+*.log
+.DS_Store
+__pycache__/
+node_modules/

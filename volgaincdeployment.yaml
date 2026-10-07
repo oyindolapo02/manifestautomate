@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: volgaweb-deploy
+  namespace: dev
+
+spec:
+  replicas: 3
+
+  selector:
+    matchLabels:
+      app: myvolga-web
+    
+  template:
+    metadata:
+      labels:
+        app: myvolga-web
+    spec:
+      containers:
+        - name: volgaweb-cont
+          image: oyindolapo02/volgaincweb:v1
+          ports:
+            - containerPort: 5173
+
+          env:
+            - name: VOLGAINC-FRONTEND-URL
+              valueFrom:
+                configMapKeyRef:
+                  name: volgaweb-config
+                  key: VOLGAINC-FRONTEND-URL
